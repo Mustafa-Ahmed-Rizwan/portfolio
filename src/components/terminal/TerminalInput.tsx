@@ -31,7 +31,7 @@ export function TerminalInput({ onSubmit, isStreaming, isDesktop = true, rickMod
     setInput("");
   };
 
-  const promptPrefix = rickMode ? "rick@C-137:~$" : "mustafa@rickfolio:~$";
+  const promptPrefix = rickMode ? "rick@C-137:~$" : "mustafa@portfolio:~$";
   const promptColor = rickMode ? "text-primary-container" : "text-text-secondary";
 
   if (isDesktop) {

@@ -79,27 +79,40 @@ export function Terminal() {
           conversationHistory: updatedHistory,
         }));
 
-        if (rickMode) {
-          try {
-            if (audioRef.current) {
-              audioRef.current.pause();
-              audioRef.current = null;
-            }
-            const voiceResponse = await fetch("/api/voice", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ text: finalStreamBuffer }),
-            });
-            if (voiceResponse.ok) {
-              const audioBlob = await voiceResponse.blob();
-              const audioUrl = URL.createObjectURL(audioBlob);
-              const audio = new Audio(audioUrl);
-              audioRef.current = audio;
-              audio.play();
-            }
-          } catch (err) {
-            console.error("Failed to play Rick voice:", err);
+        // Always play Rick's voice for any AI response
+        try {
+          if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current = null;
           }
+          const voiceResponse = await fetch("/api/voice", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: finalStreamBuffer }),
+          });
+          if (voiceResponse.ok) {
+            const audioBlob = await voiceResponse.blob();
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const audio = new Audio(audioUrl);
+            audioRef.current = audio;
+            audio.play().catch(e => console.error("Audio autoplay blocked:", e));
+          } else {
+            const errData = await voiceResponse.json().catch(() => ({}));
+            console.error("Voice API error:", voiceResponse.status, errData);
+            if (voiceResponse.status === 429) {
+              setState((s) => ({
+                ...s,
+                history: [...s.history, createLine("Voice module cooling down (Rate limited). Wait a minute.", "system", "amber")],
+              }));
+            } else {
+              setState((s) => ({
+                ...s,
+                history: [...s.history, createLine("Voice module malfunction (ElevenLabs error).", "system", "red")],
+              }));
+            }
+          }
+        } catch (err) {
+          console.error("Failed to play Rick voice:", err);
         }
       } catch {
         setState((s) => ({
@@ -184,7 +197,7 @@ export function Terminal() {
     [state.isStreaming, state.isBooting, state.rickMode, state.conversationHistory, fetchChatStream]
   );
 
-  const promptPrefix = state.rickMode ? "rick@C-137:~$" : "mustafa@rickfolio:~$";
+  const promptPrefix = state.rickMode ? "rick@C-137:~$" : "mustafa@portfolio:~$";
 
   return (
     <main className="w-full h-[100dvh] sm:h-[600px] sm:max-w-terminal-max-width bg-bg-base sm:bg-bg-surface border-none sm:border sm:border-border-subtle sm:rounded-lg sm:shadow-2xl flex flex-col overflow-hidden relative">
@@ -201,7 +214,7 @@ export function Terminal() {
           {state.rickMode ? (
             <span className="text-primary-container">rick@C-137: ~</span>
           ) : (
-            <span>mustafa@rickfolio: ~</span>
+            <span>mustafa@portfolio: ~</span>
           )}
         </div>
         <div className="flex items-center gap-2 text-text-secondary">

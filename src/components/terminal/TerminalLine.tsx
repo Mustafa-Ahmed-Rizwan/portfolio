@@ -20,7 +20,7 @@ export function TerminalLine({ line, rickMode = false }: TerminalLineProps) {
   };
 
   if (line.type === "command") {
-    const promptPrefix = rickMode ? "rick@C-137:~$" : "mustafa@rickfolio:~$";
+    const promptPrefix = rickMode ? "rick@C-137:~$" : "mustafa@portfolio:~$";
     const promptColor = rickMode ? "text-primary-container" : "text-text-secondary";
     return (
       <div className="flex items-start gap-2 mb-1">
