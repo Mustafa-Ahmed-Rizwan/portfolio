@@ -76,7 +76,7 @@ export async function POST(req: Request) {
     const systemPrompt = await getRickSystemPrompt();
 
     const result = streamText({
-      model: groq("llama-3.3-70b-versatile"),
+      model: groq("openai/gpt-oss-120b"),
       system: systemPrompt,
       messages: sanitizedMessages,
       temperature: 0.75,
